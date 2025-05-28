@@ -1,0 +1,42 @@
+/* 2) Agenda de Citas Médicas */
+-- Esquema agenda
+CREATE DATABASE IF NOT EXISTS agenda;
+
+
+CREATE TABLE pacientes (
+  id_paciente     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  nombre          VARCHAR(100) NOT NULL,
+  fecha_nacimiento DATE,
+  email           VARCHAR(100)
+);
+
+CREATE TABLE telefonos (
+  id_telefono     UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id_paciente     UUID NOT NULL
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+  numero_telefono VARCHAR(15) NOT NULL
+);
+
+CREATE TABLE citas (
+  id_cita      UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id_paciente  UUID NOT NULL
+    REFERENCES pacientes(id_paciente)
+    ON DELETE CASCADE,
+  fecha_hora   TIMESTAMP NOT NULL,
+  motivo       TEXT,
+  estado       TEXT NOT NULL
+    CHECK (estado IN ('Programada','Atendida','Cancelada'))
+);
+
+CREATE TABLE notificaciones (
+  id_notificacion UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id_cita         UUID NOT NULL
+    REFERENCES citas(id_cita)
+    ON DELETE CASCADE,
+  fecha_envio     TIMESTAMP DEFAULT now() NOT NULL,
+  medio           VARCHAR(20) NOT NULL,
+  estado          TEXT NOT NULL
+    CHECK (estado IN ('Pendiente','Enviado','Fallido'))
+);
+
