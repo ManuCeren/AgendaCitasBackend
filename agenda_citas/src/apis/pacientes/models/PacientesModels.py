@@ -69,7 +69,7 @@ class PacientesModels:
                 """, (
                     paciente.id_paciente,
                     paciente.nombre,
-                    date.fromisoformat(paciente.fecha_nacimiento),
+                    paciente.fecha_nacimiento,  
                     paciente.email
                 ))
                 affected_rows = cursor.rowcount
@@ -78,6 +78,7 @@ class PacientesModels:
             return affected_rows
         except Exception as ex:
             raise Exception(ex)
+
 
     @classmethod
     def update_paciente(cls, paciente: Pacientes):
@@ -92,11 +93,11 @@ class PacientesModels:
                     WHERE id_paciente = %s
                 """, (
                     paciente.nombre,
-                    # ✅ conversión correcta a date:
-                    date.fromisoformat(paciente.fecha_nacimiento),
+                    paciente.fecha_nacimiento,
                     paciente.email,
                     paciente.id_paciente
                 ))
+
                 affected_rows = cursor.rowcount
                 connection.commit()
             connection.close()

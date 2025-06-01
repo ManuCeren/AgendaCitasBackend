@@ -2,6 +2,7 @@ from database.database import get_connection
 from apis.notificaciones.models.entities.Notificaciones import Notificaciones
 
 class NotificacionesModels:
+
     @classmethod
     def get_all_notificaciones(cls):
         try:
@@ -9,20 +10,20 @@ class NotificacionesModels:
             notificaciones_list = []
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT id_notificacion, id_cita,  fecha_envio, medio, estado
+                    SELECT id_notificacion, id_cita, fecha_envio, medio, estado
                     FROM notificaciones
                     ORDER BY fecha_envio DESC
                 """)
                 resultset = cursor.fetchall()
                 for row in resultset:
-                    notificaion = Notificaciones(
-                        id_notificacio=row[0],
+                    notificacion = Notificaciones(
+                        id_notificacion=row[0],
                         id_cita=row[1],
                         fecha_envio=row[2],
                         medio=row[3],
                         estado=row[4]
                     )
-                    notificaciones_list.append(notificaion.to_JSON())
+                    notificaciones_list.append(notificacion.to_JSON())
             connection.close()
             return notificaciones_list
         except Exception as ex:
@@ -42,7 +43,7 @@ class NotificacionesModels:
                 row = cursor.fetchone()
                 if row:
                     notificacion = Notificaciones(
-                        id_notificacio=row[0],
+                        id_notificacion=row[0],
                         id_cita=row[1],
                         fecha_envio=row[2],
                         medio=row[3],
@@ -61,7 +62,7 @@ class NotificacionesModels:
             with connection.cursor() as cursor:
                 cursor.execute("""
                     INSERT INTO notificaciones (id_notificacion, id_cita, fecha_envio, medio, estado)
-                    VALUES (%s, %s, %s, %s,%s)
+                    VALUES (%s, %s, %s, %s, %s)
                 """, (
                     notificacion.id_notificacion,
                     notificacion.id_cita,
@@ -81,18 +82,19 @@ class NotificacionesModels:
         try:
             connection = get_connection()
             with connection.cursor() as cursor:
-                cursor.execute(""" 
-                               UPDATE notificaciones
+                cursor.execute("""
+                    UPDATE notificaciones
                     SET id_cita = %s,
                         fecha_envio = %s,
                         medio = %s,
                         estado = %s
-                    WHERE id_cita = %s
+                    WHERE id_notificacion = %s
                 """, (
                     notificacion.id_cita,
                     notificacion.fecha_envio,
                     notificacion.medio,
-                    notificacion.estado
+                    notificacion.estado,
+                    notificacion.id_notificacion
                 ))
                 affected_rows = cursor.rowcount
                 connection.commit()
@@ -107,8 +109,8 @@ class NotificacionesModels:
             connection = get_connection()
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    DELETE FROM citas
-                    WHERE id_cita = %s
+                    DELETE FROM notificaciones
+                    WHERE id_notificacion = %s
                 """, (notificacion.id_notificacion,))
                 affected_rows = cursor.rowcount
                 connection.commit()

@@ -58,7 +58,7 @@ class TelefonosModels:
             with connection.cursor() as cursor:
                 cursor.execute("""
                     INSERT INTO telefonos (id_telefono, id_paciente, numero_telefono)
-                    VALUES (%s, %s, %s, %s)
+                    VALUES (%s, %s, %s)
                 """, (
                     telefono.id_telefono,
                     telefono.id_paciente,
