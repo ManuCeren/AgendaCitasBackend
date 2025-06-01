@@ -1,7 +1,7 @@
 from database.database import get_connection
 from apis.notificaciones.models.entities.Notificaciones import Notificaciones
 
-class CitaModel:
+class NotificacionesModels:
     @classmethod
     def get_all_notificaciones(cls):
         try:

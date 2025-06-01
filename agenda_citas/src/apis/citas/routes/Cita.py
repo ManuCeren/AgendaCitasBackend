@@ -1,8 +1,8 @@
 from flask import Blueprint, jsonify, request
-import uuid #que lo usarmemos para generarlos en Postgres
+import uuid 
 from apis.citas.models.CitasModels import CitaModel
 from apis.citas.models.entities.Citas import Cita
-from datetime import datetime #para manejar las fechas
+from datetime import datetime 
 
 main = Blueprint('cita_blueprint', __name__)
 
@@ -32,63 +32,58 @@ def get_citas_by_id(id):
 def add_cita():
     try:
         data = request.get_json()
-        required_fields = ['id_paciente', 'motivo', 'estado']
+        required_fields = ['id_paciente', 'fecha_hora', 'motivo', 'estado']
         missing_fields = [field for field in required_fields if field not in data]            
         if missing_fields:
-               return jsonify({"error": f"Faltan campos obligatorios: {', '.join(missing_fields)}"}), 400
-        
+            return jsonify({"error": f"Faltan campos obligatorios: {', '.join(missing_fields)}"}), 400
+
+        cita_id = str(uuid.uuid4())
+
         citas = Cita(
-            id_cita=cita_id, # type: ignore
-            id_paciente=data.get('id_paciente' ),
-            fecha_hora=datetime.now(),
+            id_cita=cita_id,
+            id_paciente=data.get('id_paciente'),
+            fecha_hora=data.get('fecha_hora'),  
             motivo=data.get('motivo'),
             estado=data.get('estado')
         )
         CitaModel.add_cita(citas)
 
-        return jsonify({"message": "Cita agregada", "id": cita_id}), 201 # type: ignore
+        return jsonify({"message": "Cita agregada", "id": cita_id}), 201
 
     except Exception as ex:
-            return jsonify({"error": str(ex)}), 500
+        return jsonify({"error": str(ex)}), 500
 
-@main.route('/update/<id>', methods=['PUT' ])
-def update_categoria(id): 
+
+@main.route('/<id>', methods=['PUT'])
+def update_cita(id):
     try:
         data = request.get_json()
-        existing_cita = CitaModel.get_cita_by_id(id)
-        if not existing_cita:
-            return jsonify({"error": "Cita no encontrada"}), 404
-        required_fields = ['id_paciente', 'motivo', 'estado']
-        missing_fields = [field for field in required_fields if field not in data]
-        if missing_fields:
-            return jsonify({"error": f"Faltan campos obligatorios: {', '.join(missing_fields)}"}),500
-        
-        citas = Cita(
+
+        # Convertir fecha_hora
+        fecha_hora = datetime.fromisoformat(data.get('fecha_hora'))
+
+        cita = Cita(
             id_cita=id,
-            id_paciente=data.get('id_paciente' ),
-            fecha_hora=datetime.now(),
+            id_paciente=data.get('id_paciente'),
+            fecha_hora=fecha_hora,
             motivo=data.get('motivo'),
             estado=data.get('estado')
         )
-        affected_rows = CitaModel. update_cita(citas)
+
+        affected_rows = CitaModel.update_cita(cita)
+
         if affected_rows == 1:
             return jsonify({"message": "Cita actualizada correctamente"}), 200
         else:
             return jsonify({"error": "No se pudo actualizar la cita"}), 400
-    except Exception as ex:
-            return jsonify({"error": str(ex)}), 500
 
-@main.route('/delete/<id>', methods=['DELETE' ])
+    except Exception as ex:
+        return jsonify({"error": str(ex)}), 500
+    
+@main.route('/<id>', methods=['DELETE'])
 def delete_cita(id):
     try:
-        citas = Cita(
-            id_cita=id,
-            id_paciente="", 
-            fecha_hora=datetime.now(),
-            motivo="",
-            estado=""
-        )
-        affected_rows = CitaModel. delete_cita(citas)
+        affected_rows = CitaModel.delete_cita_by_id(id)
         if affected_rows == 1:
             return jsonify({"message": f"Cita {id} eliminada"}), 200
         else:

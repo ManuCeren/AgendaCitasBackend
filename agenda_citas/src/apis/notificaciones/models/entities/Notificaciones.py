@@ -1,6 +1,6 @@
 from utils.DateFormat import DateFormat
 
-class Notificacion:
+class Notificaciones:
     def __init__(self, id_notificacion, id_cita, fecha_envio, medio, estado):
         self.id_notificacion = id_notificacion
         self.id_cita = id_cita

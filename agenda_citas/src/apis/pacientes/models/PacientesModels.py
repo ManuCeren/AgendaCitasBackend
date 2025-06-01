@@ -1,6 +1,6 @@
 from database.database import get_connection
 from apis.pacientes.models.entities.Pacientes import Pacientes
-
+from datetime import date   # 👈 agregar esta línea
 
 class PacientesModels:
 
@@ -11,9 +11,10 @@ class PacientesModels:
             pacientes_list = []
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT id_paciente, nombre, fecha_nacimiento, email
-                    FROM pacientes
-                    ORDER BY fecha_nacimiento DESC
+                    SELECT p.id_paciente, p.nombre, p.fecha_nacimiento, p.email, t.numero_telefono
+                    FROM pacientes p
+                    LEFT JOIN telefonos t ON p.id_paciente = t.id_paciente
+                    ORDER BY p.fecha_nacimiento DESC;
                 """)
                 resultset = cursor.fetchall()
                 for row in resultset:
@@ -21,7 +22,8 @@ class PacientesModels:
                         id_paciente=row[0],
                         nombre=row[1],
                         fecha_nacimiento=row[2],
-                        email=row[3]
+                        email=row[3],
+                        telefono=row[4]  # puede ser NULL si no tiene teléfono
                     )
                     pacientes_list.append(paciente.to_JSON())
             connection.close()
@@ -36,9 +38,10 @@ class PacientesModels:
             paciente_json = None
             with connection.cursor() as cursor:
                 cursor.execute("""
-                    SELECT id_paciente, nombre, fecha_nacimiento, email
-                    FROM pacientes
-                    WHERE id_paciente = %s
+                    SELECT p.id_paciente, p.nombre, p.fecha_nacimiento, p.email, t.numero_telefono
+                    FROM pacientes p
+                    LEFT JOIN telefonos t ON p.id_paciente = t.id_paciente
+                    WHERE p.id_paciente = %s
                 """, (id_paciente,))
                 row = cursor.fetchone()
                 if row:
@@ -46,9 +49,10 @@ class PacientesModels:
                         id_paciente=row[0],
                         nombre=row[1],
                         fecha_nacimiento=row[2],
-                        email=row[3]
+                        email=row[3],
+                        telefono=row[4]
                     )
-                    cliente_json = paciente.to_JSON()
+                    paciente_json = paciente.to_JSON()
             connection.close()
             return paciente_json
         except Exception as ex:
@@ -65,7 +69,7 @@ class PacientesModels:
                 """, (
                     paciente.id_paciente,
                     paciente.nombre,
-                    paciente.fecha_nacimiento,
+                    date.fromisoformat(paciente.fecha_nacimiento),
                     paciente.email
                 ))
                 affected_rows = cursor.rowcount
@@ -88,7 +92,8 @@ class PacientesModels:
                     WHERE id_paciente = %s
                 """, (
                     paciente.nombre,
-                    paciente.fecha_nacimiento,
+                    # ✅ conversión correcta a date:
+                    date.fromisoformat(paciente.fecha_nacimiento),
                     paciente.email,
                     paciente.id_paciente
                 ))

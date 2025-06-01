@@ -14,7 +14,7 @@ def create_app():
 
     # Habilitar CORS para todas las rutas y origenes 
     # Esto permite que el frontend realice solicitudes a la Api
-    CORS(app)
+    CORS(app, supports_credentials=True, origins="*")
     app.config.from_object(app_config['development'])
 
     #apartado para las rutas 
@@ -32,12 +32,15 @@ def create_app():
     @app.errorhandler(500)
     def error_servidor(error):
         return "<h1>Error interno del servidor</h1>", 500
+    
+    #@app.route("/cors-debug")
+    #def cors_debug():
+        #return "CORS Debug OK"
 
     @app.route('/')
     def principal():
         return "<h1>Bienvenido a mi aplicacion con Flask</h1>" 
     return app
-
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True)
